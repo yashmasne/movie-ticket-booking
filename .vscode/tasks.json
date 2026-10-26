@@ -1,0 +1,87 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Spring Boot App (Default)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/run.ps1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Spring Boot App (H2 In-Memory DB)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/run.ps1",
+                "-H2"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Ensure MySQL Started (XAMPP)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "$c = Get-NetTCPConnection -LocalPort 3306 -ErrorAction SilentlyContinue; if (-not $c -and (Test-Path 'C:\\xampp\\mysql\\bin\\mysqld.exe')) { Start-Process 'C:\\xampp\\mysql\\bin\\mysqld.exe' -ArgumentList '--defaults-file=mysql\\bin\\my.ini','--standalone' -WorkingDirectory 'C:\\xampp' -WindowStyle Hidden; Start-Sleep -Seconds 2 }"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Maven: Clean Package",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& '${workspaceFolder}/mvnw.cmd' clean package -DskipTests"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Maven: Spring Boot Run",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& '${workspaceFolder}/mvnw.cmd' spring-boot:run"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}

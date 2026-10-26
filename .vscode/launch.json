@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "java",
+            "name": "Run Movie Ticket App (H2 In-Memory - Zero Setup)",
+            "request": "launch",
+            "mainClass": "com.movieticket.MovieTicketApplication",
+            "projectName": "movie-ticket-booking",
+            "args": "--spring.profiles.active=h2"
+        },
+        {
+            "type": "java",
+            "name": "Run Movie Ticket App (MySQL Database)",
+            "request": "launch",
+            "mainClass": "com.movieticket.MovieTicketApplication",
+            "projectName": "movie-ticket-booking",
+            "preLaunchTask": "Ensure MySQL Started (XAMPP)"
+        }
+    ]
+}

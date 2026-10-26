@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinePass - Premium Movie Ticket Management System</title>
+    <meta name="description" content="Experience movies like never before with CinePass. Book tickets, choose interactive seats, enjoy IMAX & 4DX cinemas, and manage your bookings effortlessly.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%3E%3Ctext y=%2226%22 font-size=%2224%22>🎬</text></svg>">
+</head>
+<body>
+
+    <!-- Sticky Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <!-- Brand Logo -->
+            <div class="brand" onclick="App.switchView('home')">
+                <div class="brand-icon">🎟️</div>
+                <div>
+                    <span class="brand-name">CinePass</span>
+                    <span class="brand-tag">Cinemas</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <ul class="nav-links">
+                <li class="nav-item active" data-nav="home">
+                    <button onclick="App.switchView('home')">🎬 Movies</button>
+                </li>
+                <li class="nav-item" data-nav="bookings" id="navBookingsLink" style="display: none;">
+                    <button onclick="App.switchView('bookings')">🎟️ My Bookings</button>
+                </li>
+                <li class="nav-item" data-nav="admin" id="navAdminLink" style="display: none;">
+                    <button onclick="App.switchView('admin')">⚙️ Admin Portal</button>
+                </li>
+            </ul>
+
+            <!-- Navigation Actions (City selector & User Auth) -->
+            <div class="nav-actions">
+                <!-- City Selector -->
+                <div class="city-select-wrapper">
+                    <select id="citySelect" class="city-select">
+                        <option value="All Cities">📍 All Cities</option>
+                    </select>
+                    <span class="city-icon">▼</span>
+                </div>
+
+                <!-- Guest Actions -->
+                <div id="navGuestBlock" style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-outline btn-sm" onclick="openModal('authModal')">Sign In</button>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('authModal'); document.getElementById('authTabRegister').click();">Register</button>
+                </div>
+
+                <!-- Logged In User Profile -->
+                <div id="navUserBlock" class="user-profile-menu" style="display: none;">
+                    <button class="user-btn" id="userMenuBtn">
+                        <div class="user-avatar" id="userAvatarInitial">U</div>
+                        <span id="navUserName">User</span>
+                        <span style="font-size: 10px; color: var(--text-dim);">▼</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-name" id="dropdownUserName">User Name</div>
+                            <div class="dropdown-email" id="dropdownUserEmail">user@example.com</div>
+                            <div class="dropdown-role" id="dropdownUserRole">MEMBER</div>
+                        </div>
+                        <button class="dropdown-item" onclick="App.switchView('bookings')">
+                            <span>🎟️</span> My Bookings
+                        </button>
+                        <button class="dropdown-item" id="adminDropdownItem" onclick="App.switchView('admin')">
+                            <span>⚙️</span> Admin Portal
+                        </button>
+                        <button class="dropdown-item logout" onclick="Auth.logout()">
+                            <span>🚪</span> Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Views -->
+    <main class="container">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: HOME PAGE (MOVIES SHOWCASE)        -->
+        <!-- ========================================== -->
+        <section id="homeView">
+            
+            <!-- Hero Featured Blockbuster Spotlight -->
+            <div class="hero-section">
+                <img id="heroBackdrop" class="hero-backdrop" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1600" alt="Backdrop">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="hero-badges">
+                        <span class="badge badge-featured">🔥 Blockbuster Spotlight</span>
+                        <span class="badge badge-rating">⭐ <span id="heroRating">8.8</span>/10</span>
+                        <span class="badge badge-format">IMAX 3D</span>
+                        <span class="badge" style="background: rgba(255,255,255,0.1); color: #fff;" id="heroAgeRating">UA 16+</span>
+                    </div>
+                    <h1 class="hero-title" id="heroTitle">Dune: Part Two</h1>
+                    <div class="hero-meta">
+                        <span id="heroGenre">Sci-Fi, Adventure, Action</span> • 
+                        <span id="heroDuration">166 mins</span> • 
+                        <span id="heroLanguage">English</span>
+                    </div>
+                    <p class="hero-desc" id="heroDesc">
+                        Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family. Facing a choice between the love of his life and the fate of the known universe.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary btn-lg" id="heroBookBtn">
+                            <span>🎟️</span> Book Tickets Now
+                        </button>
+                        <button class="btn btn-secondary btn-lg" id="heroTrailerBtn">
+                            <span>▶</span> Watch Trailer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Search Controls Bar -->
+            <div class="controls-bar">
+                <div class="controls-row-top">
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search by title, genre, director, or cast...">
+                    </div>
+
+                    <!-- Filter Selects -->
+                    <div class="filter-selects">
+                        <!-- Language Filter -->
+                        <select id="langSelect" class="filter-select">
+                            <option value="">All Languages</option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Spanish">Spanish</option>
+                        </select>
+
+                        <!-- Status Tabs -->
+                        <div class="status-tabs">
+                            <button class="tab-btn active" data-status="NOW_SHOWING">Now Showing</button>
+                            <button class="tab-btn" data-status="COMING_SOON">Coming Soon</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Genre Pills -->
+                <div class="genre-pills">
+                    <button class="genre-pill active" data-genre="">All Genres</button>
+                    <button class="genre-pill" data-genre="Action">Action</button>
+                    <button class="genre-pill" data-genre="Sci-Fi">Sci-Fi</button>
+                    <button class="genre-pill" data-genre="Adventure">Adventure</button>
+                    <button class="genre-pill" data-genre="Drama">Drama</button>
+                    <button class="genre-pill" data-genre="Animation">Animation</button>
+                    <button class="genre-pill" data-genre="Comedy">Comedy</button>
+                    <button class="genre-pill" data-genre="Crime">Crime</button>
+                    <button class="genre-pill" data-genre="History">History</button>
+                </div>
+            </div>
+
+            <!-- Movies Grid Section Header -->
+            <div class="section-header">
+                <h2 class="section-title">Explore Movies</h2>
+                <div class="movies-count" id="moviesCountDisplay">(8 Movies)</div>
+            </div>
+
+            <!-- Movie Cards Grid -->
+            <div class="movies-grid" id="moviesGrid">
+                <!-- Dynamically populated by app.js -->
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: USER DASHBOARD (MY BOOKINGS)       -->
+        <!-- ========================================== -->
+        <section id="bookingsView" class="dashboard-view" style="display: none;">
+            <div class="dashboard-header">
+                <h2 class="section-title">My Movie Bookings</h2>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 6px;">
+                    View your booked e-tickets, admission QR codes, and reservation history.
+                </p>
+            </div>
+
+            <div class="bookings-list" id="userBookingsList">
+                <!-- Dynamically populated by BookingModule -->
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: ADMIN DASHBOARD PORTAL             -->
+        <!-- ========================================== -->
+        <section id="adminView" class="admin-portal" style="display: none;">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Admin Management Portal</h2>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                        Manage movies, cinemas, screens, showtimes, and view customer ticket bookings.
+                    </p>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="AdminModule.openAddMovieModal()">+ Add New Movie</button>
+            </div>
+
+            <!-- KPI Stats Cards -->
+            <div class="admin-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon red">🎬</div>
+                    <div>
+                        <div class="stat-val" id="statTotalMovies">0</div>
+                        <div class="stat-label">Total Movies</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon cyan">🏢</div>
+                    <div>
+                        <div class="stat-val" id="statTotalCinemas">0</div>
+                        <div class="stat-label">Cinemas</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon gold">⏱️</div>
+                    <div>
+                        <div class="stat-val" id="statTotalShowtimes">0</div>
+                        <div class="stat-label">Showtimes</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">🎟️</div>
+                    <div>
+                        <div class="stat-val" id="statTotalBookings">0</div>
+                        <div class="stat-label">Total Bookings</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon gold">💰</div>
+                    <div>
+                        <div class="stat-val" id="statTotalRevenue">₹0</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Sub-Navigation Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" data-tab="movies" onclick="AdminModule.switchAdminTab('movies')">Movies (CRUD)</button>
+                <button class="admin-tab-btn" data-tab="cinemas" onclick="AdminModule.switchAdminTab('cinemas')">Cinemas & Screens</button>
+                <button class="admin-tab-btn" data-tab="showtimes" onclick="AdminModule.switchAdminTab('showtimes')">Showtimes Schedule</button>
+                <button class="admin-tab-btn" data-tab="bookings" onclick="AdminModule.switchAdminTab('bookings')">All Customer Bookings</button>
+            </div>
+
+            <!-- Tab 1: Movies Table -->
+            <div id="adminTabMovies">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 14px;">
+                    <button class="btn btn-primary btn-sm" onclick="AdminModule.openAddMovieModal()">+ Add Movie</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Poster</th>
+                                <th>Title</th>
+                                <th>Genre</th>
+                                <th>Details</th>
+                                <th>Rating</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminMoviesTableBody">
+                            <!-- Populated by admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Cinemas & Screens -->
+            <div id="adminTabCinemas" style="display: none;">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 14px; gap: 10px;">
+                    <button class="btn btn-primary btn-sm" onclick="AdminModule.openAddCinemaModal()">+ Add Cinema</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Cinema Name</th>
+                                <th>City</th>
+                                <th>Address</th>
+                                <th>Screens</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCinemasTableBody">
+                            <!-- Populated by admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Showtimes -->
+            <div id="adminTabShowtimes" style="display: none;">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 14px;">
+                    <button class="btn btn-primary btn-sm" onclick="AdminModule.openAddShowtimeModal()">+ Schedule Showtime</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Movie</th>
+                                <th>Cinema & Screen</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Base Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminShowtimesTableBody">
+                            <!-- Populated by admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 4: All Bookings -->
+            <div id="adminTabBookings" style="display: none;">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Ref #</th>
+                                <th>Customer</th>
+                                <th>Movie</th>
+                                <th>Showtime</th>
+                                <th>Seats</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminBookingsTableBody">
+                            <!-- Populated by admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 1: MOVIE DETAILS & SHOWTIME SELECTOR                        -->
+    <!-- ================================================================= -->
+    <div id="movieDetailsModal" class="modal-overlay">
+        <div class="modal-container modal-lg">
+            <button class="modal-close" onclick="closeModal('movieDetailsModal')">✕</button>
+
+            <div class="movie-details-hero">
+                <img id="detailsBackdrop" class="movie-details-backdrop" src="" alt="Backdrop">
+                <div class="movie-details-hero-overlay"></div>
+            </div>
+
+            <div class="movie-details-body">
+                <div class="movie-details-header">
+                    <img id="detailsPoster" class="details-poster" src="" alt="Poster">
+                    <div class="details-meta-block">
+                        <h2 class="details-title" id="detailsTitle">Movie Title</h2>
+                        <div class="details-info-row">
+                            <span>⭐ <strong id="detailsRating" style="color:var(--accent-gold);">8.8</strong> <span id="detailsVotes" style="color:var(--text-dim);">(24k)</span></span>
+                            <span>⏳ <span id="detailsDuration">160 mins</span></span>
+                            <span>🌐 <span id="detailsLanguage">English</span></span>
+                            <span>🏷️ <span id="detailsAgeRating">UA 16+</span></span>
+                        </div>
+                        <div style="font-size: 13px; color: var(--accent-cyan); font-weight: 600; margin-bottom: 12px;" id="detailsGenre">Action, Sci-Fi</div>
+                        <button class="btn btn-secondary btn-sm" id="detailsTrailerBtn">
+                            <span>▶</span> Watch Trailer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Synopsis & Cast -->
+                <div style="margin-bottom: 24px;">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Synopsis</h4>
+                    <p style="font-size: 14px; color: #CBD5E1; line-height: 1.6;" id="detailsDescription">Description...</p>
+                    <div style="margin-top: 10px; font-size: 13px; color: var(--text-dim);">
+                        <div><strong>Director:</strong> <span id="detailsDirector" style="color: var(--text-muted);">-</span></div>
+                        <div style="margin-top: 2px;"><strong>Cast:</strong> <span id="detailsCast" style="color: var(--text-muted);">-</span></div>
+                    </div>
+                </div>
+
+                <!-- Showtimes Date Carousel -->
+                <div style="margin-bottom: 16px;">
+                    <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 10px;">Select Date</h4>
+                    <div class="date-picker-bar" id="detailsDatePickerBar">
+                        <!-- Populated by app.js -->
+                    </div>
+                </div>
+
+                <!-- Cinemas & Showtimes List -->
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Available Cinemas & Shows</h4>
+                    <div id="cinemaShowtimesContainer">
+                        <!-- Populated by app.js -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 2: INTERACTIVE SEAT SELECTION                               -->
+    <!-- ================================================================= -->
+    <div id="seatModal" class="modal-overlay">
+        <div class="modal-container modal-xl">
+            <button class="modal-close" onclick="closeModal('seatModal')">✕</button>
+
+            <div class="seat-booking-view">
+                <!-- Header with Showtime details -->
+                <div class="seat-view-header">
+                    <div>
+                        <h2 class="seat-movie-title" id="seatMovieTitle">Dune: Part Two</h2>
+                        <div class="seat-showtime-meta" id="seatCinemaInfo">PVR IMAX Grand Plaza, Screen 1 (IMAX 3D)</div>
+                        <div class="seat-showtime-meta" id="seatDateTimeInfo" style="color: var(--accent-gold); font-weight: 600; margin-top: 2px;">2026-10-25 • 05:45 PM</div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="closeModal('seatModal'); openModal('movieDetailsModal');">Change Showtime</button>
+                </div>
+
+                <!-- Screen Representation -->
+                <div class="cinema-screen-area">
+                    <div class="screen-curve"></div>
+                    <span class="screen-label">🎬 ALL EYES THIS WAY (CINEMA SCREEN) 🎬</span>
+                </div>
+
+                <!-- Seat Tier Legend -->
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <div class="legend-seat avail-standard"></div>
+                        <span>Standard (₹250-320)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-seat avail-premium"></div>
+                        <span>Premium Prime (₹350-450)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-seat avail-vip"></div>
+                        <span>VIP Recliner (₹480-600)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-seat selected"></div>
+                        <span>Selected</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-seat booked"></div>
+                        <span>Sold Out</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Seating Grid -->
+                <div class="seat-grid-container" id="seatGridContainer">
+                    <!-- Populated dynamically by BookingModule.renderSeatGrid() -->
+                </div>
+
+                <!-- Live Selection Summary Bar -->
+                <div class="seat-summary-bar">
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px;">Selected Seats</div>
+                        <div class="selected-seats-chips" id="selectedSeatChips">
+                            <span style="font-size: 13px; color: var(--text-dim);">No seats selected</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div class="price-breakdown">
+                            <div class="price-sub" id="seatSubtotalDisplay">₹0 + ₹0 GST</div>
+                            <div class="price-total" id="seatTotalDisplay">₹0</div>
+                        </div>
+                        <button class="btn btn-primary btn-lg" id="proceedToPaymentBtn" onclick="BookingModule.proceedToPayment()" disabled style="opacity: 0.5;">
+                            Proceed to Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 3: SIMULATED PAYMENT GATEWAY MODAL                          -->
+    <!-- ================================================================= -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('paymentModal')">✕</button>
+
+            <div style="padding: 28px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <span style="font-size: 32px;">💳</span>
+                    <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin-top: 4px;">Secure Checkout</h2>
+                    <p style="font-size: 13px; color: var(--text-muted);">Simulated Demonstration Gateway</p>
+                </div>
+
+                <!-- Order Mini Summary -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14px;" id="payModalMovieTitle">Movie Title</div>
+                        <div style="font-size: 12px; color: var(--text-dim);">Seats: <span id="payModalSeats" style="color:var(--text-main); font-weight: 600;">-</span></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: var(--text-dim);">Payable Amount</div>
+                        <div style="font-size: 20px; font-weight: 800; color: var(--accent-gold);" id="payModalTotal">₹0</div>
+                    </div>
+                </div>
+
+                <!-- Customer Details Form -->
+                <form id="paymentForm" onsubmit="BookingModule.processPaymentAndBooking(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" id="payCustomerName" class="form-input" placeholder="e.g. Alex Morgan" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" id="payCustomerEmail" class="form-input" placeholder="alex@example.com" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mobile Number</label>
+                        <input type="tel" id="payCustomerPhone" class="form-input" placeholder="+91 9876543210">
+                    </div>
+
+                    <!-- Payment Method Tabs -->
+                    <label class="form-label" style="margin-top: 10px;">Select Payment Method</label>
+                    <div class="payment-tabs">
+                        <button type="button" class="pay-tab-btn active" data-method="CREDIT_CARD" onclick="BookingModule.setPaymentMethod('CREDIT_CARD')">
+                            <span style="font-size: 18px;">💳</span>
+                            <span>Card</span>
+                        </button>
+                        <button type="button" class="pay-tab-btn" data-method="UPI" onclick="BookingModule.setPaymentMethod('UPI')">
+                            <span style="font-size: 18px;">📱</span>
+                            <span>UPI / QR</span>
+                        </button>
+                        <button type="button" class="pay-tab-btn" data-method="NET_BANKING" onclick="BookingModule.setPaymentMethod('NET_BANKING')">
+                            <span style="font-size: 18px;">🏦</span>
+                            <span>Net Banking</span>
+                        </button>
+                    </div>
+
+                    <!-- Method 1: Credit / Debit Card Pane -->
+                    <div id="cardPaymentPane">
+                        <!-- Dynamic Card Mockup -->
+                        <div class="card-preview">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="card-chip"></div>
+                                <span style="font-weight: 800; font-style: italic; color: #fff; letter-spacing: 1px;">VISA</span>
+                            </div>
+                            <div class="card-number-display" id="cardPreviewNumber">•••• •••• •••• ••••</div>
+                            <div class="card-bottom-row">
+                                <div>
+                                    <div style="font-size: 9px; color: #9ca3af;">CARD HOLDER</div>
+                                    <div class="card-holder-display" id="cardPreviewHolder">YOUR NAME</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 9px; color: #9ca3af;">EXPIRES</div>
+                                    <div class="card-expiry-display" id="cardPreviewExpiry">MM/YY</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Card Number</label>
+                            <input type="text" id="cardNumInput" class="form-input" placeholder="4111 2222 3333 4444" maxlength="19" value="4111 2222 3333 4444">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Cardholder Name</label>
+                                <input type="text" id="cardHolderInput" class="form-input" placeholder="Alex Morgan" value="Alex Morgan">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Expiry (MM/YY)</label>
+                                    <input type="text" id="cardExpiryInput" class="form-input" placeholder="12/28" maxlength="5" value="12/28">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">CVV</label>
+                                    <input type="password" id="cardCvvInput" class="form-input" placeholder="888" maxlength="4" value="888">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Method 2: UPI Pane -->
+                    <div id="upiPaymentPane" style="display: none; text-align: center; padding: 10px 0;">
+                        <div style="background: #fff; display: inline-block; padding: 10px; border-radius: var(--radius-sm); margin-bottom: 14px;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=upi://pay?pa=cinepass@okhdfcbank" alt="UPI QR" style="display:block;">
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Scan with GPay, PhonePe, Paytm, or enter your UPI ID below:</p>
+                        <div class="form-group" style="max-width: 300px; margin: 0 auto 10px auto;">
+                            <input type="text" id="upiIdInput" class="form-input" placeholder="username@okhdfcbank" value="alex@okaxis" style="text-align: center;">
+                        </div>
+                    </div>
+
+                    <!-- Method 3: Net Banking Pane -->
+                    <div id="netBankingPaymentPane" style="display: none; padding: 10px 0;">
+                        <div class="form-group">
+                            <label class="form-label">Select Your Bank</label>
+                            <select id="bankSelect" class="form-input">
+                                <option value="HDFC Bank">HDFC Bank</option>
+                                <option value="State Bank of India">State Bank of India (SBI)</option>
+                                <option value="ICICI Bank">ICICI Bank</option>
+                                <option value="Axis Bank">Axis Bank</option>
+                                <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                            </select>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted);">You will be securely redirected to your bank's mock authentication portal.</p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div style="margin-top: 24px;">
+                        <button type="submit" id="paySubmitBtn" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">
+                            <span id="paySubmitBtnText">Pay Now</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 4: BOOKING CONFIRMATION & PERFORATED CINEMA TICKET STUB     -->
+    <!-- ================================================================= -->
+    <div id="confirmationModal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('confirmationModal')">✕</button>
+
+            <div style="padding: 24px;">
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <div style="font-size: 38px;">🎉</div>
+                    <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--accent-green);">Booking Confirmed!</h2>
+                    <p style="font-size: 13px; color: var(--text-muted);">Please present this e-ticket or QR code at cinema entry.</p>
+                </div>
+
+                <!-- Perforated Ticket Stub -->
+                <div class="ticket-wrapper" id="printableTicket">
+                    <!-- Ticket Header -->
+                    <div class="ticket-header">
+                        <div class="ticket-header-title">CinePass Boarding Pass</div>
+                        <div class="ticket-ref-badge" id="confirmRefBadge">#MT-849201</div>
+                    </div>
+
+                    <!-- Ticket Main Body -->
+                    <div class="ticket-body">
+                        <img id="confirmMoviePoster" class="ticket-poster" src="" alt="Movie">
+                        <div class="ticket-details">
+                            <h3 class="ticket-movie-name" id="confirmMovieTitle">Dune: Part Two</h3>
+                            <div style="font-size: 13px; color: var(--accent-cyan); font-weight: 600;" id="confirmCinemaName">PVR IMAX Grand Plaza (IMAX 3D)</div>
+                            <div class="ticket-grid-info">
+                                <div>
+                                    <div class="info-label">Date & Time</div>
+                                    <div class="info-val" id="confirmDateTime">2026-10-25 • 05:45 PM</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Seats Booked</div>
+                                    <div class="info-val" id="confirmSeats" style="color: var(--accent-gold);">D4, D5 (2 Seats)</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Customer</div>
+                                    <div class="info-val" id="confirmCustomer" style="font-size: 12px;">Alex Morgan</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Total Paid</div>
+                                    <div class="info-val" id="confirmTotalPaid" style="color: var(--accent-gold);">₹700</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Perforation Line with Side Cutouts -->
+                    <div class="ticket-perforation">
+                        <div class="perforation-line"></div>
+                    </div>
+
+                    <!-- Ticket Footer with QR Code -->
+                    <div class="ticket-footer">
+                        <div>
+                            <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">SCAN FOR ENTRY ADMISSION</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">TXN: <span id="confirmTxnId">TXN-DEMO-982</span></div>
+                            <div class="barcode-strip" style="margin-top: 4px;">|||||| |||| |||||||| |||</div>
+                        </div>
+                        <div class="qr-code-box">
+                            <img id="confirmQrCode" src="" alt="Admission QR Code" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="BookingModule.printTicket()">
+                        <span>🖨️</span> Print / Save Ticket
+                    </button>
+                    <button class="btn btn-primary" style="flex: 1;" onclick="closeModal('confirmationModal'); App.switchView('bookings');">
+                        <span>🎟️</span> View My Bookings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 5: AUTHENTICATION (SIGN IN & REGISTER)                      -->
+    <!-- ================================================================= -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 440px;">
+            <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+
+            <div style="padding: 28px;">
+                <!-- Header Tabs -->
+                <div style="display: flex; border-bottom: 1px solid var(--border-subtle); margin-bottom: 22px;">
+                    <button id="authTabLogin" class="tab-btn active" style="flex: 1; border-radius: 0; padding: 12px; background: none; border-bottom: 2px solid var(--accent-red); color: #fff;">
+                        Sign In
+                    </button>
+                    <button id="authTabRegister" class="tab-btn" style="flex: 1; border-radius: 0; padding: 12px; background: none; color: var(--text-muted);">
+                        Create Account
+                    </button>
+                </div>
+
+                <!-- Quick Demo Login Bar -->
+                <div style="background: rgba(229, 9, 20, 0.08); border: 1px dashed rgba(229, 9, 20, 0.3); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 18px; text-align: center;">
+                    <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">One-Click Quick Evaluation</div>
+                    <div style="display: flex; gap: 8px; justify-content: center;">
+                        <button class="btn btn-secondary btn-sm" onclick="Auth.quickLogin('user')">👤 Demo User</button>
+                        <button class="btn btn-outline btn-sm" onclick="Auth.quickLogin('admin')">👑 Demo Admin</button>
+                    </div>
+                </div>
+
+                <!-- Sign In Form -->
+                <div id="loginFormPane">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" id="loginEmail" class="form-input" placeholder="user@movieticket.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Sign In</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerFormPane" style="display: none;">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" id="regName" class="form-input" placeholder="Alex Morgan" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" id="regEmail" class="form-input" placeholder="alex@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password * (min 6 characters)</label>
+                            <input type="password" id="regPassword" class="form-input" placeholder="••••••••" required minlength="6">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" id="regPhone" class="form-input" placeholder="+1 555-0192">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Account Role</label>
+                                <select id="regRole" class="form-input">
+                                    <option value="ROLE_USER">Regular Customer</option>
+                                    <option value="ROLE_ADMIN">Cinema Administrator</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Register Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 6: TRAILER VIDEO PLAYER                                     -->
+    <!-- ================================================================= -->
+    <div id="trailerModal" class="modal-overlay">
+        <div class="modal-container modal-lg" style="background: #000; overflow: hidden; padding: 0;">
+            <button class="modal-close" id="trailerModalClose" onclick="closeModal('trailerModal')">✕</button>
+            <div style="padding: 14px 20px; font-weight: 700; border-bottom: 1px solid var(--border-subtle);" id="trailerModalTitle">Movie Trailer</div>
+            <div style="position: relative; width: 100%; padding-top: 56.25%;">
+                <iframe id="trailerIframe" style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 7: ADMIN ADD / EDIT MOVIE                                   -->
+    <!-- ================================================================= -->
+    <div id="adminMovieModal" class="modal-overlay">
+        <div class="modal-container modal-lg">
+            <button class="modal-close" onclick="closeModal('adminMovieModal')">✕</button>
+            <div style="padding: 24px;">
+                <h3 id="movieModalTitle" style="font-family: var(--font-heading); font-size: 22px; font-weight: 800; margin-bottom: 20px;">Add New Movie</h3>
+                <form id="movieForm">
+                    <input type="hidden" id="movieIdInput">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Movie Title *</label>
+                            <input type="text" id="movieTitleInput" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Genres (comma separated) *</label>
+                            <input type="text" id="movieGenreInput" class="form-input" placeholder="Action, Sci-Fi" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Synopsis / Description *</label>
+                        <textarea id="movieDescInput" class="form-input" rows="3" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Language</label>
+                            <input type="text" id="movieLanguageInput" class="form-input" value="English">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Duration (Minutes)</label>
+                            <input type="number" id="movieDurationInput" class="form-input" value="140">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rating (e.g. 8.5)</label>
+                            <input type="number" step="0.1" id="movieRatingInput" class="form-input" value="8.5">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Release Date</label>
+                            <input type="date" id="movieReleaseDateInput" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Age Rating</label>
+                            <select id="movieAgeRatingInput" class="form-input">
+                                <option value="U">U (Universal)</option>
+                                <option value="UA 13+">UA 13+</option>
+                                <option value="UA 16+" selected>UA 16+</option>
+                                <option value="A 18+">A 18+</option>
+                                <option value="PG-13">PG-13</option>
+                                <option value="R 18+">R 18+</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select id="movieStatusInput" class="form-input">
+                                <option value="NOW_SHOWING">Now Showing</option>
+                                <option value="COMING_SOON">Coming Soon</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Poster Image URL *</label>
+                            <input type="url" id="moviePosterUrlInput" class="form-input" placeholder="https://..." required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Banner Image URL</label>
+                            <input type="url" id="movieBannerUrlInput" class="form-input" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">YouTube Trailer URL</label>
+                        <input type="url" id="movieTrailerUrlInput" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Director</label>
+                            <input type="text" id="movieDirectorInput" class="form-input" placeholder="Director Name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cast Members</label>
+                            <input type="text" id="movieCastInput" class="form-input" placeholder="Actor 1, Actor 2">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('adminMovieModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Movie</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- MODAL 8: ADMIN ADD CINEMA & SCREEN                                -->
+    <!-- ================================================================= -->
+    <div id="adminCinemaModal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('adminCinemaModal')">✕</button>
+            <div style="padding: 24px;">
+                <h3 style="font-family: var(--font-heading); font-size: 22px; font-weight: 800; margin-bottom: 20px;">Add New Cinema</h3>
+                <form id="cinemaForm">
+                    <div class="form-group">
+                        <label class="form-label">Cinema Name *</label>
+                        <input type="text" id="cinemaNameInput" class="form-input" placeholder="e.g. PVR Megaplex Grand" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">City *</label>
+                            <input type="text" id="cinemaCityInput" class="form-input" placeholder="e.g. Mumbai" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Contact</label>
+                            <input type="text" id="cinemaPhoneInput" class="form-input" placeholder="+91 22 4920 8800">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Address / Mall Location *</label>
+                        <input type="text" id="cinemaAddressInput" class="form-input" placeholder="Phoenix Marketcity, Level 4" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amenities</label>
+                        <input type="text" id="cinemaAmenitiesInput" class="form-input" placeholder="IMAX with Laser, Dolby Atmos, Recliners, Valet">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('adminCinemaModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Cinema</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Add Screen Modal -->
+    <div id="adminScreenModal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('adminScreenModal')">✕</button>
+            <div style="padding: 24px;">
+                <h3 style="font-family: var(--font-heading); font-size: 20px; font-weight: 800; margin-bottom: 6px;">Add Screen</h3>
+                <div style="font-size: 13px; color: var(--accent-cyan); margin-bottom: 18px;" id="screenCinemaNameDisplay">Cinema Name</div>
+                <form id="screenForm">
+                    <input type="hidden" id="screenCinemaIdInput">
+                    <div class="form-group">
+                        <label class="form-label">Screen / Audi Name *</label>
+                        <input type="text" id="screenNameInput" class="form-input" placeholder="e.g. Screen 1 - IMAX" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Screen Type / Format *</label>
+                        <select id="screenTypeInput" class="form-input">
+                            <option value="Standard 2D">Standard 2D</option>
+                            <option value="IMAX 3D">IMAX 3D</option>
+                            <option value="4DX">4DX Dynamic</option>
+                            <option value="Dolby Atmos">Dolby Atmos Surround</option>
+                            <option value="Luxe Recliner">Luxe VIP Recliner</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Rows (e.g. 6 to 10 rows)</label>
+                            <input type="number" id="screenRowsInput" class="form-input" value="8" min="3" max="15">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Seats Per Row (Cols)</label>
+                            <input type="number" id="screenColsInput" class="form-input" value="10" min="4" max="20">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('adminScreenModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Screen & Seats</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Add Showtime Modal -->
+    <div id="adminShowtimeModal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('adminShowtimeModal')">✕</button>
+            <div style="padding: 24px;">
+                <h3 style="font-family: var(--font-heading); font-size: 22px; font-weight: 800; margin-bottom: 20px;">Schedule Showtime</h3>
+                <form id="showtimeForm">
+                    <div class="form-group">
+                        <label class="form-label">Select Movie *</label>
+                        <select id="showtimeMovieSelect" class="form-input" required>
+                            <!-- Populated by admin.js -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Select Cinema & Screen *</label>
+                        <select id="showtimeScreenSelect" class="form-input" required>
+                            <!-- Populated by admin.js -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Show Date *</label>
+                            <input type="date" id="showtimeDateInput" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Start Time *</label>
+                            <input type="time" id="showtimeTimeInput" class="form-input" value="18:00" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Base Ticket Price (₹) *</label>
+                        <input type="number" id="showtimePriceInput" class="form-input" value="300" min="50" step="10" required>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('adminShowtimeModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Schedule Show</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/booking.js"></script>
+    <script src="/js/admin.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
